@@ -50,11 +50,11 @@ def get_Curr_Time():
 # Load DB to pandas for analysis
 #mysql_pandas = pd.read_sql('SELECT * FROM Customer;', con=mysql_conn)
 #print(mysql_pandas.head())
-connection_list = Create_Connection()
-mysql_cur = connection_list[0]
-mysql_conn = connection_list[1]
 
-def Create_New_Customer():
+
+def Create_New_Customer(ListOfCons):
+    mysql_cur = ListOfCons[0]
+    mysql_conn = ListOfCons[1]
 
     print("Please enter an SSN: ")
     try:
@@ -83,11 +83,10 @@ def Create_New_Customer():
     print("Please review your information above. ")
     print("")
 
-def Create_Account():
+def Create_Account(ListOfCons):
 
-    #connection_list = Create_Connection()
-    #mysql_cur = connection_list[0]
-    #mysql_conn = connection_list[1]
+    mysql_cur = ListOfCons[0]
+    mysql_conn = ListOfCons[1]
     print("Enter your customer ID")
     try:
         customer_ID = int(input())
@@ -155,7 +154,9 @@ def Create_Account():
     print("Please review Account information above. ")
     print("")
 
-def sign_in():
+def sign_in(ListOfCons):
+    mysql_cur = ListOfCons[0]
+    mysql_conn = ListOfCons[1]
     print("Please enter the number which account you'd like to access?")
     try:
         account_num = int(input())
@@ -174,11 +175,180 @@ def sign_in():
     print(mysql_pandas.head())
     print("")
 
-# 2.	if a customer tries to modify an account that doesn’t exist
-# 3.	if a customer does not have enough balance to complete a transaction
+def view_all_data(ListOfCons):
+    mysql_cur = ListOfCons[0]
+    mysql_conn = ListOfCons[1]
+    mysql_pandas = pd.read_sql('SELECT * FROM Customer', con=mysql_conn)
+    print(mysql_pandas.head())
+    time.sleep(2)
+    mysql_pandas = pd.read_sql('SELECT * FROM Account', con=mysql_conn)
+    print(mysql_pandas.head())
+    time.sleep(2)
+    mysql_pandas = pd.read_sql('SELECT * FROM Account_xref', con=mysql_conn)
+    print(mysql_pandas.head())
+    time.sleep(2)
+    mysql_pandas = pd.read_sql('SELECT * FROM Transaction_log', con=mysql_conn)
+    print(mysql_pandas.head())
+    time.sleep(2)
+    print("Be responsible")
 
-def add_withdrawl_balance():
-    print("wtf")
 
-def transfer_money():
-    print("also not done")
+def add_withdrawl_transfer_balance(ListOfCons,selection):
+    mysql_cur = ListOfCons[0]
+    mysql_conn = ListOfCons[1]
+
+    mysql_pandas = pd.read_sql('SELECT * FROM Account', con=mysql_conn)
+    print(mysql_pandas.head())
+    print("Enter your account number")
+    try:
+        account_num = int(input())
+    except:
+        print("Invalid Input. Please enter a valid Account Num ")
+
+    print("Do you wish to add money to your account (type 'yes' or 'no')? ")
+    choice = input()
+    choice_inp = 4 # nothing
+    if choice.lower() == "no":
+        print("Do you wish to Withdrawl (type 'yes' or 'no')? ")
+        choice2 = input()
+
+        if choice2.lower() == "no":
+            print("You really went through all this to not do anything???")
+            print("You gonna wait in timeout")
+            time.sleep(10)
+            choice_inp = 4 # nothing
+
+        # withdraw
+        elif choice2.lower() == "yes":
+            choice_inp = 2
+            print("How much do you wish to take out? ")
+            try:
+                withdraw_cash = Decimal(input())
+            except:
+                print("Invalid number.")
+                withdraw_cash = 0
+                # Withdrawl done
+        else:
+            print(".......... bruh")
+    # for adding
+    elif (choice.lower() == "yes"):
+        choice_inp = 1
+        print("How much do you wish to add? ")
+        try:
+            input_cash = Decimal(input())
+        except:
+            print("Invalid Input.")
+            input_cash = 0
+    else:
+        print("Couldn't decipher your request. Adding $69 pity dollars to your #{0} account.".format(account_num))
+        input_cash = 69
+
+    trans_id = randint(100,99999999)
+
+    if selection == 1:
+        print("Do you wish to transfer funds (type 'yes' or 'no')? ")
+        choice3 = input()
+        if choice3.lower() == "no":
+            print("Why you like this?")
+        elif choice3.lower() == "yes":
+            choice_inp = 3 # transfer
+            print("How much do you want to transfer?")
+            try:
+                trans_cash = Decimal(input())
+            except:
+                print("Invalid Input.")
+                trans_cash = 0
+            print("To which account?")
+            try:
+                account_num2 = int(input())
+            except:
+                print("Invalid Input.")
+                account_num2 = 0
+        else:
+            print("Bruhhh again?")
+    if choice_inp == 1: # change these to update
+        mysql_cur.execute('SELECT balance FROM Account WHERE account_num = ' + account_num  + ';')
+        result = mysql_cur.fetchall()
+        print(result)
+        update_sql = '''UPDATE Account
+                        SET balance = ?
+                        WHERE account_num = ?
+                     '''
+        update_vals = (input_cash, account_num)
+        mysql_cur.execute(update_sql, update_vals)
+
+        insert_sql = '''INSERT INTO Transaction_log(timestamp, trans_id, account_num, trans_type, trans_amount)
+                            VALUES (%s,%s,%s,%s,%s)'''
+        timestamp1 = get_Curr_Time()
+        trans_id = randint(1,999999)
+        trans_type = "Addition"
+        insert_vals = (timestamp1, trans_id, account_num, trans_type, input_cash) # input cash == balance
+        mysql_cur.execute(insert_sql, insert_vals)
+
+        mysql_pandas = pd.read_sql('SELECT * FROM Transaction_log WHERE account_num = ' + account_num + ";", con=mysql_conn)
+        print(mysql_pandas.head())
+
+    elif choice_inp == 2:
+        update_sql = '''UPDATE Account
+                        SET balance = ?
+                        WHERE account_num = ?
+                     '''
+        update_vals = (withdraw_cash, account_num)
+        mysql_cur.execute(update_sql, update_vals)
+
+        insert_sql = '''INSERT INTO Transaction_log(timestamp, trans_id, account_num, trans_type, trans_amount)
+                            VALUES (%s,%s,%s,%s,%s)'''
+        timestamp1 = get_Curr_Time()
+        trans_id = randint(1,999999)
+        trans_type = "Subtraction"
+        insert_vals = (timestamp1, trans_id, account_num, trans_type, input_cash) # input cash == balance
+        mysql_cur.execute(insert_sql, insert_vals)
+
+        mysql_pandas = pd.read_sql('SELECT * FROM Transaction_log WHERE account_num = ' + account_num + ";", con=mysql_conn)
+        print(mysql_pandas.head())
+
+    elif choice_inp == 3: # transfer
+        update_sql = '''UPDATE Account
+                        SET balance = ?
+                        WHERE account_num = ?
+                     '''
+        update_vals = (trans_cash, account_num)
+        mysql_cur.execute(update_sql, update_vals)
+        update_sql = '''UPDATE Account
+                        SET balance = ?
+                        WHERE account_num = ?
+                     '''
+        update_vals = (trans_cash, account_num2)
+        mysql_cur.execute(update_sql, update_vals)
+
+
+        insert_sql = '''INSERT INTO Transaction_log(timestamp, trans_id, account_num, trans_type, trans_amount)
+                            VALUES (%s,%s,%s,%s,%s)'''
+        timestamp1 = get_Curr_Time()
+        trans_id = randint(1,999999)
+        trans_type = "Subtraction"
+        insert_vals = (timestamp1, trans_id, account_num, trans_type, trans_cash) # input cash == balance
+        mysql_cur.execute(insert_sql, insert_vals)
+        insert_sql = '''INSERT INTO Transaction_log(timestamp, trans_id, account_num, trans_type, trans_amount)
+                            VALUES (%s,%s,%s,%s,%s)'''
+        timestamp2 = get_Curr_Time()
+        trans_id2 = randint(1,999999)
+        trans_type = "Addition"
+        insert_vals = (timestamp2, trans_id2, account_num2, trans_type, trans_cash) # input cash == balance
+        mysql_cur.execute(insert_sql, insert_vals)
+
+        mysql_pandas = pd.read_sql('SELECT * FROM Transaction_log WHERE account_num = ' + account_num + ";", con=mysql_conn)
+        print(mysql_pandas.head())
+        mysql_pandas = pd.read_sql('SELECT * FROM Transaction_log WHERE account_num = ' + account_num + ";", con=mysql_conn)
+        print(mysql_pandas.head())
+    else:
+        print("You must have accidentally NOT typed yes or no to get here...")
+        print("Hopefully you didn't say no 4 times... ;)  ")
+
+
+def view_Customers(ListOfCons):
+    mysql_cur = ListOfCons[0]
+    mysql_conn = ListOfCons[1]
+    print("Please purview the data: ")
+    mysql_pandas = pd.read_sql('SELECT * FROM Customer;', con=mysql_conn)
+    print(mysql_pandas.head())
