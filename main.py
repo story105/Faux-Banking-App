@@ -1,20 +1,34 @@
 # have to import hella functionaliy up here
 # Connection should be made each time you run a command?
 # Make sure that its ACID property stays
+
+# python -m pip install XXX
+
 import tableprint as tp
 import functions
 
 def main():
 
-    choice = 1
 
+    print("--- Entry Menu --- ")
+    print("1. Sign Up A New Customer ")
+    print("0. Quit")
+    try:
+        choice = int(input())
+    except:
+        print("Invalid Choice")
+        choice = 0
+    if choice == 0:
+        tp.banner("Exiting Prematurely")
+    else:
+        functions.Create_New_Customer();
     while choice != 0:
 
         print("--- Main Menu --- ")
-        print("1. Sign Up A New Customer ")
-        print("2. Create Account ")  # what is the diff exactly?
-        print("3. Sign In ")
-        print("4. CHARLIE MAKE MORE FUNCT? ")
+        print("1. Create Account (Know customer ID) ")  # what is the diff exactly?
+        print("2. Sign In (Know account Num) ")
+        print("3. Add/Withdrawl From Balance ")
+        print("4. Transfer Cash Between Accounts ")
         print("0. Quit ")
 
         try:
@@ -25,13 +39,16 @@ def main():
             continue
 
         if choice == 1:
-            functions.Create_New_Customer();
-
-        elif choice == 2:
             functions.Create_Account();
 
-        elif choice == 3:
+        elif choice == 2:
             functions.sign_in();
+
+        elif choice == 3:
+            functions.add_withdrawl_balance();
+
+        elif choice == 4:
+            functions.transfer_money();
 
         elif choice == 0:
             tp.banner("Exiting Banking Application") # if yours doesn' run change any tp to print
