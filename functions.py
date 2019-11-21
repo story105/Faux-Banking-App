@@ -191,6 +191,8 @@ def view_all_data(ListOfCons):
     print(mysql_pandas.head())
     time.sleep(2)
     print("Be responsible")
+    print("")
+    print("")
 
 
 def add_withdrawl_transfer_balance(ListOfCons,selection):
@@ -205,43 +207,44 @@ def add_withdrawl_transfer_balance(ListOfCons,selection):
     except:
         print("Invalid Input. Please enter a valid Account Num ")
 
-    print("Do you wish to add money to your account (type 'yes' or 'no')? ")
-    choice = input()
-    choice_inp = 4 # nothing
-    if choice.lower() == "no":
-        print("Do you wish to Withdrawl (type 'yes' or 'no')? ")
-        choice2 = input()
+    if selection == 2:
+        print("Do you wish to add money to your account (type 'yes' or 'no')? ")
+        choice = input()
+        choice_inp = 4 # nothing
+        if choice.lower() == "no":
+            print("Do you wish to Withdrawl (type 'yes' or 'no')? ")
+            choice2 = input()
 
-        if choice2.lower() == "no":
-            print("You really went through all this to not do anything???")
-            print("You gonna wait in timeout")
-            time.sleep(10)
-            choice_inp = 4 # nothing
+            if choice2.lower() == "no":
+                print("You really went through all this to not do anything???")
+                print("You gonna wait in timeout")
+                time.sleep(10)
+                choice_inp = 4 # nothing
 
-        # withdraw
-        elif choice2.lower() == "yes":
-            choice_inp = 2
-            print("How much do you wish to take out? ")
+            # withdraw
+            elif choice2.lower() == "yes":
+                choice_inp = 2
+                print("How much do you wish to take out? ")
+                try:
+                    withdraw_cash = Decimal(input())
+                except:
+                    print("Invalid number.")
+                    withdraw_cash = 0
+                    # Withdrawl done
+            else:
+                print(".......... bruh")
+        # for adding
+        elif (choice.lower() == "yes"):
+            choice_inp = 1
+            print("How much do you wish to add? ")
             try:
-                withdraw_cash = Decimal(input())
+                input_cash = Decimal(input())
             except:
-                print("Invalid number.")
-                withdraw_cash = 0
-                # Withdrawl done
+                print("Invalid Input.")
+                input_cash = 0
         else:
-            print(".......... bruh")
-    # for adding
-    elif (choice.lower() == "yes"):
-        choice_inp = 1
-        print("How much do you wish to add? ")
-        try:
-            input_cash = Decimal(input())
-        except:
-            print("Invalid Input.")
-            input_cash = 0
-    else:
-        print("Couldn't decipher your request. Adding $69 pity dollars to your #{0} account.".format(account_num))
-        input_cash = 69
+            print("Couldn't decipher your request. Adding $69 pity dollars to your #{0} account.".format(account_num))
+            input_cash = 69
 
     trans_id = randint(100,99999999)
 
@@ -265,8 +268,10 @@ def add_withdrawl_transfer_balance(ListOfCons,selection):
                 print("Invalid Input.")
                 account_num2 = 0
         else:
-            print("Bruhhh again?")
+            print("Bruhhh?")
+
     if choice_inp == 1: # change these to update
+        account_num = str(account_num)
         mysql_cur.execute('SELECT balance FROM Account WHERE account_num = ' + account_num  + ';')
         result = mysql_cur.fetchall()
         print(result)
@@ -284,7 +289,7 @@ def add_withdrawl_transfer_balance(ListOfCons,selection):
         trans_type = "Addition"
         insert_vals = (timestamp1, trans_id, account_num, trans_type, input_cash) # input cash == balance
         mysql_cur.execute(insert_sql, insert_vals)
-
+        account_num = str(account_num)
         mysql_pandas = pd.read_sql('SELECT * FROM Transaction_log WHERE account_num = ' + account_num + ";", con=mysql_conn)
         print(mysql_pandas.head())
 
@@ -304,19 +309,20 @@ def add_withdrawl_transfer_balance(ListOfCons,selection):
         insert_vals = (timestamp1, trans_id, account_num, trans_type, input_cash) # input cash == balance
         mysql_cur.execute(insert_sql, insert_vals)
 
+        account_num = str(account_num)
         mysql_pandas = pd.read_sql('SELECT * FROM Transaction_log WHERE account_num = ' + account_num + ";", con=mysql_conn)
         print(mysql_pandas.head())
 
     elif choice_inp == 3: # transfer
         update_sql = '''UPDATE Account
-                        SET balance = ?
-                        WHERE account_num = ?
+                        SET balance = %s
+                        WHERE account_num = %s
                      '''
         update_vals = (trans_cash, account_num)
         mysql_cur.execute(update_sql, update_vals)
         update_sql = '''UPDATE Account
-                        SET balance = ?
-                        WHERE account_num = ?
+                        SET balance = %s
+                        WHERE account_num = %s
                      '''
         update_vals = (trans_cash, account_num2)
         mysql_cur.execute(update_sql, update_vals)
@@ -337,6 +343,7 @@ def add_withdrawl_transfer_balance(ListOfCons,selection):
         insert_vals = (timestamp2, trans_id2, account_num2, trans_type, trans_cash) # input cash == balance
         mysql_cur.execute(insert_sql, insert_vals)
 
+        account_num = str(account_num)
         mysql_pandas = pd.read_sql('SELECT * FROM Transaction_log WHERE account_num = ' + account_num + ";", con=mysql_conn)
         print(mysql_pandas.head())
         mysql_pandas = pd.read_sql('SELECT * FROM Transaction_log WHERE account_num = ' + account_num + ";", con=mysql_conn)
