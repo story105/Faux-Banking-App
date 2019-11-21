@@ -70,14 +70,15 @@ def main():
         functions.Create_New_Customer(listofcon);
 
     while choice != 0:
-
+        signed_in = 0
         print("--- Main Menu --- ")
         print("1. Create Account (Know customer ID) ")  # what is the diff exactly?
         print("2. Sign In (Know account Num) ")
         print("3. Add/Withdrawl From Balance ")
         print("4. Transfer Cash Between Accounts ")
         print("5. View Customers")
-        print("6. View All Data")
+        if signed_in == 1:
+            print("6. View All Data")
         print("0. Quit ")
 
         try:
@@ -92,7 +93,7 @@ def main():
 
         elif choice == 2:
             functions.sign_in(listofcon);
-
+            signed_in = 1
         elif choice == 3:
             functions.add_withdrawl_transfer_balance(listofcon,2);
 
@@ -101,8 +102,10 @@ def main():
 
         elif choice == 5:
             functions.view_Customers(listofcon);
+
         elif choice == 6:
             functions.view_all_data(listofcon);
+
         elif choice == 0:
             tp.banner("Exiting Banking Application") # if yours doesn' run change any tp to print
         else:
